@@ -4,6 +4,7 @@ Shopping Demo Mycroft Skill.
 import random
 import time
 import requests
+import base64
 from adapt.intent import IntentBuilder
 from os.path import join, dirname
 from string import Template
@@ -17,6 +18,10 @@ __author__ = 'aix'
 
 LOGGER = getLogger(__name__)
 productBlob = ""
+productObject = {}
+productAddList = []
+priceOfItems = []
+shopPage = ""
 
 class ShoppingDemoSkill(MycroftSkill):
     def __init__(self):
@@ -33,7 +38,8 @@ class ShoppingDemoSkill(MycroftSkill):
         utterance = message.data.get('utterance').lower()
         utterance = utterance.replace(message.data.get('SearchProductKeyword'), '')
         searchString = utterance
-        api_key = ""
+        eapi = "MGE5YzQwNDFlZjJiNDdhYTk4NmFlZGZiZTgxODNhYmY="
+        api_key = base64.b64decode(eapi)
         headers = {'Ocp-Apim-Subscription-Key': api_key}
         product = searchString
         offset = "0"
@@ -43,7 +49,7 @@ class ShoppingDemoSkill(MycroftSkill):
         result_search = response.json()
         global productBlob
         productBlob = result_search
-        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "dataBlob": productBlob['uk']['ghs']['products']}))
+        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "dataBlob": productBlob['uk']['ghs']['products'], "itemCartCount": len(productAddList)}))
         
     @intent_handler(IntentBuilder("AddProduct").require("AddProductKeyword").build())
     def handle_add_product_intent(self, message):
@@ -52,7 +58,20 @@ class ShoppingDemoSkill(MycroftSkill):
         """    
         utterance = message.data.get('utterance').lower()
         utterance = utterance.replace(message.data.get('AddProductKeyword'), '')
-        searchString = utterance
+        productTitle = utterance.replace(" ", "").lower()
+        global productAddList
+        global shopPage
+        shopPage = "main"
+        
+        for x in productBlob['uk']['ghs']['products']['results']:
+            mapProduct = x['name'].replace("-", "").replace(" ", "").lower()
+            if mapProduct == productTitle:
+                productQty = 1
+                productPrice = x['price']
+                productName = x['name']
+                productImage = x['image']
+                productAddList.append({"quantity": productQty, "price": productPrice, "name": productName, "image": productImage})
+                self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "itemCartCount": len(productAddList)}))
         
     @intent_handler(IntentBuilder("RemoveProduct").require("RemoveProductKeyword").build())
     def handle_remove_product_intent(self, message):
@@ -89,8 +108,56 @@ class ShoppingDemoSkill(MycroftSkill):
         utterance = message.data.get('utterance').lower()
         utterance = utterance.replace(message.data.get('CheckoutKeyword'), '')
         searchString = utterance    
-    
-    
+
+    @intent_handler(IntentBuilder("ViewCart").require("ViewCartKeyword").build())
+    def handle_checkout_intent(self, message):
+        """
+        ViewCart
+        """    
+        global productObject
+        global productAddList
+        global priceOfItems
+        productObject['products'] = productAddList
+        cartProductsBlob = productObject
+        totalPrice = 0
+        for x in productObject['products']:
+            priceOfItems.append(x['price'])
+            totalPrice = sum(priceOfItems)
+        
+        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/cart", "dataCartBlob": cartProductsBlob, "totalPrice": totalPrice}))
+        
+    @intent_handler(IntentBuilder("ClearCart").require("ClearCartKeyword").build())
+    def handle_clearcart_intent(self, message):
+        """
+        Clear Cart
+        """   
+        global productObject
+        global productAddList
+        global shopPage
+        global productBlob
+        productAddList.clear()
+        productObject['product'] = productAddList
+        cartProductsBlob = productObject
+        if shopPage == "cart":
+            self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/cart", "dataCartBlob": cartProductsBlob}))
+            self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "dataBlob": productBlob['uk']['ghs']['products'], "itemCartCount": len(productAddList)}))
+            priceOfItems.clear()
+        elif shopPage == "main":
+            self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "itemCartCount": len(productAddList)}))
+            priceOfItems.clear()
+                    
+    @intent_handler(IntentBuilder("ShopDemoPage").require("ShopDemoKeyword").build())
+    def handle_shop_demo_page_intent(self, message):
+        """
+        Get Page Context
+        """   
+        utterance = message.data.get('utterance').lower()
+        utterance = utterance.replace(message.data.get('ShopDemoKeyword'), '')
+        searchString = utterance.replace(" ", "").lower()
+        global shopPage
+        shopPage = searchString
+        print(shopPage)
+        
     def stop(self):
         """
         Mycroft Stop Function

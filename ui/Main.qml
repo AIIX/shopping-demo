@@ -6,17 +6,95 @@ import org.kde.plasma.core 2.1 as PlasmaCore
 
 import Mycroft 1.0 as Mycroft
 
-Mycroft.ScrollableDelegate {
+Mycroft.DelegateBase {
     id: delegate
       property var dataBlob
       property var groceryModel: dataBlob.results
+      property var itemCartCount
       backgroundImage: "https://source.unsplash.com/1920x1080/?+vegitables"
-      graceTime: 30000
+      graceTime: 80000
+      
+    controlBar: RowLayout {
+        id: bottomButtonRow
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        property var itemCnt: delegate.itemCartCount
         
+        onItemCntChanged: {
+            cartCountLabel.text = itemCartCount
+        }
+        
+        Button {
+                id: backButton
+                Layout.preferredWidth: parent.width / 6
+                Layout.fillHeight: true
+                icon.name: "go-previous-symbolic"
+                onClicked: {
+                    delegate.backRequested();
+                }
+            }
+        
+        Button {
+        id: cartBtn
+        Layout.preferredWidth: parent.width / 2
+        Layout.fillHeight: true
+        
+        Label {
+            id: viewCartLabel
+            anchors.centerIn: parent
+            text: "View Cart"
+        }
+        
+        Rectangle {
+            color: Kirigami.Theme.linkColor
+            width: Kirigami.Units.gridUnit * 1.5
+            height: parent.height - (Kirigami.Units.largeSpacing + Kirigami.Units.smallSpacing)
+            anchors.right: parent.right
+            anchors.rightMargin: Kirigami.Units.largeSpacing
+            anchors.verticalCenter: parent.verticalCenter
+            radius: 5
+            
+            Label {
+                id: cartCountLabel
+                anchors.centerIn: parent
+                color: Kirigami.Theme.backgroundColor
+                text: "0"
+                }
+            }
+    
+        onClicked: {
+            Mycroft.MycroftController.sendText("view cart")
+            }
+        }
+    
+    Button {
+        id: cartclearBtn
+        Layout.preferredWidth: parent.width / 3.225
+        Layout.fillHeight: true
+        
+        Label {
+            anchors.centerIn: parent
+            text: "Clear Cart"
+        }
+        
+        onClicked: {
+            Mycroft.MycroftController.sendText("clear cart")
+            }
+        }
+    }
+    
     Kirigami.CardsListView{
         model: groceryModel
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: Kirigami.Units.largeSpacing
+        anchors.left: parent.left
+        anchors.right: parent.right
+        clip: true
         delegate: Kirigami.AbstractCard {
         id: aCard
+        Layout.fillWidth: true
         implicitHeight: delegateItem.implicitHeight + Kirigami.Units.largeSpacing * 3
         
         contentItem: Item {
@@ -111,7 +189,6 @@ Mycroft.ScrollableDelegate {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                     elide: Text.ElideRight
-                    width: rater.width
                     text: "£" + modelData.price
                 }
                 
@@ -130,10 +207,22 @@ Mycroft.ScrollableDelegate {
             Button {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Kirigami.Units.gridUnit * 2
-                text: "Add To Cart"
+                
+                Label {
+                    anchors.centerIn: parent
+                    text: "Add To Cart"
+                }
+                onClicked: {
+                    var sendProductInfo = "add product " + modelData.name
+                    Mycroft.MycroftController.sendText(sendProductInfo)
+                            }
+                        }
+                    }
+                }
             }
+            
+                Component.onCompleted: {
+                    Mycroft.MycroftController.sendText("shoppage main")
+                }
         }
-    }
-}
-}
 }

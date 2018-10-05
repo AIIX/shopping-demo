@@ -30,6 +30,18 @@ class ShoppingDemoSkill(MycroftSkill):
         """    
         super(ShoppingDemoSkill, self).__init__(name="ShoppingDemoSkill")
 
+    def initialize(self):
+        try:
+            # Register handlers for messagebus events
+            self.add_event('aiix.shopping-demo.add_product',
+                           self.handle_add_product)
+        except:
+            pass
+
+    def handle_add_product(self, message):
+        productAddList.append({"quantity": 1, "price": 10, "name": message.data["name"], "image": ""})
+        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "itemCartCount": len(productAddList)}))
+
     @intent_handler(IntentBuilder("SearchProduct").require("SearchProductKeyword").build())
     def handle_search_product_intent(self, message):
         """

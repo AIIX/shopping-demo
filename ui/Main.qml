@@ -213,8 +213,10 @@ Mycroft.DelegateBase {
                     text: "Add To Cart"
                 }
                 onClicked: {
-                    //TODO: metadata for the whole product description or better, a single product id from which the server will get the info it needs
                     Mycroft.MycroftController.sendRequest("aiix.shopping-demo.add_product", {"name": modelData.name});
+                            }
+                        }
+                    }
                 }
             }
             

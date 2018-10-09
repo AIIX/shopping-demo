@@ -33,6 +33,7 @@ Mycroft.DelegateBase {
             
             onClicked: {
                 delegate.backRequested();
+                Mycroft.MycroftController.sendRequest("aiix.shopping-demo.get_product_count", {});
             }
         }
         
@@ -47,7 +48,7 @@ Mycroft.DelegateBase {
             }
         
             onClicked: {
-                Mycroft.MycroftController.sendText("go to checkout")
+                Mycroft.MycroftController.sendRequest("aiix.shopping-demo.checkout", {});
             }
         }
     
@@ -94,7 +95,6 @@ Mycroft.DelegateBase {
                     Image {
                         id: placeImage
                         source: modelData.image
-                        Layout.fillWidth: true
                         Layout.preferredHeight: Kirigami.Units.gridUnit * 4
                         Layout.minimumHeight: Kirigami.Units.gridUnit * 4
                         fillMode: Image.PreserveAspectFit
@@ -122,6 +122,25 @@ Mycroft.DelegateBase {
                         wrapMode: Text.WordWrap
                         elide: Text.ElideRight
                         text: "£" + modelData.price
+                    }
+                    
+                    Kirigami.Separator {
+                        Layout.fillHeight: true
+                        color: Kirigami.Theme.linkColor
+                    }
+                    
+                    RoundButton {
+                        implicitWidth: Kirigami.Units.iconSizes.medium
+                        implicitHeight: Kirigami.Units.iconSizes.medium
+                        Image {
+                            source: "images/removeitem.svg"
+                            anchors.centerIn: parent
+                            width: Kirigami.Units.iconSizes.medium
+                            height: Kirigami.Units.iconSizes.medium
+                        }
+                        onClicked: {
+                            Mycroft.MycroftController.sendRequest("aiix.shopping-demo.remove_product", {"id": modelData.id});
+                        }
                     }
                 }
             }

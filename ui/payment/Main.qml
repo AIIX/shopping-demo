@@ -2,7 +2,6 @@ import QtQuick.Layouts 1.4
 import QtQuick 2.4
 import QtQuick.Controls 2.2
 import org.kde.kirigami 2.4 as Kirigami
-import org.kde.plasma.core 2.1 as PlasmaCore
 
 import Mycroft 1.0 as Mycroft
 

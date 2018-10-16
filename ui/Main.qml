@@ -223,7 +223,7 @@ Mycroft.DelegateBase {
             }
             
             Component.onCompleted: {
-                Mycroft.MycroftController.sendText("shoppage main")
+                Mycroft.MycroftController.sendRequest("aiix.shopping-demo.view_cart", {});
             }
         }
 }

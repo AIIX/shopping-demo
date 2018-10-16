@@ -41,6 +41,7 @@ class ShoppingDemoSkill(MycroftSkill):
             self.add_event('aiix.shopping-demo.checkout', self.handle_checkout)
             self.add_event('aiix.shopping-demo.get_product_count', self.get_shop_cart_count)
             self.add_event('aiix.shopping-demo.process_payment', self.complete_payment)
+            self.add_event('aiix.shopping-demo.view_cart', self.handle.handle_viewcart_intent)
         
         except:
             pass
@@ -128,7 +129,7 @@ class ShoppingDemoSkill(MycroftSkill):
         print("Here")
         
     @intent_handler(IntentBuilder("ViewCart").require("ViewCartKeyword").build())
-    def handle_checkout_intent(self, message):
+    def handle_viewcart_intent(self, message):
         """
         ViewCart
         """    

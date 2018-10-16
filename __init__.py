@@ -81,7 +81,9 @@ class ShoppingDemoSkill(MycroftSkill):
             
         global productAddList
         global shopPage
+        global productObject
         shopPage = "main"
+        productObject['products'] = productAddList
         
         for x in productBlob['uk']['ghs']['products']['results']:
             mapProduct = x['name'].replace("-", "").replace(" ", "").lower()
@@ -92,7 +94,7 @@ class ShoppingDemoSkill(MycroftSkill):
                 productImage = x['image']
                 productId = self.gen_rand_id()
                 productAddList.append({"quantity": productQty, "price": productPrice, "name": productName, "image": productImage, "id": productId})
-                self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "itemCartCount": len(productAddList)}))
+                self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "itemCartCount": len(productAddList), "dataCartBlob": productObject, "totalPrice": self.get_total()}))
         
     @intent_handler(IntentBuilder("RemoveProduct").require("RemoveProductKeyword").build())
     def handle_remove_product_intent(self, message):
@@ -119,7 +121,7 @@ class ShoppingDemoSkill(MycroftSkill):
         cartProductsBlob = productObject
         totalPrice = self.get_total()
         checkoutPrice = totalPrice
-        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/cart", "dataCartBlob": cartProductsBlob, "totalPrice": totalPrice}))
+        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/cart", "dataCartBlob": cartProductsBlob, "itemCartCount": len(productAddList), "totalPrice": totalPrice}))
     
     @intent_handler(IntentBuilder("Checkout").require("CheckoutKeyword").build())
     def handle_checkout_intent(self, message):
@@ -157,10 +159,10 @@ class ShoppingDemoSkill(MycroftSkill):
         cartProductsBlob = productObject
         totalPrice = self.get_total()
         if shopPage == "cart":
-            self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/cart", "dataCartBlob": cartProductsBlob, "totalPrice": totalPrice}))
+            self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/cart", "itemCartCount": len(productAddList), "dataCartBlob": cartProductsBlob, "totalPrice": totalPrice}))
             priceOfItems.clear()
         elif shopPage == "main":
-            self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "itemCartCount": len(productAddList)}))
+            self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "itemCartCount": len(productAddList), "dataCartBlob": cartProductsBlob, "totalPrice": totalPrice}))
             priceOfItems.clear()
                     
     @intent_handler(IntentBuilder("ShopDemoPage").require("ShopDemoKeyword").build())

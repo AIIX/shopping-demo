@@ -5,7 +5,7 @@ import org.kde.kirigami 2.4 as Kirigami
 
 import Mycroft 1.0 as Mycroft
 
-Mycroft.DelegateBase {
+Mycroft.ScrollableDelegate {
     id: delegate
       property var dataBlob
       property var groceryModel: dataBlob.results
@@ -217,11 +217,7 @@ Mycroft.DelegateBase {
                     }
                 }
             }
-            
-            ScrollBar.vertical: ScrollBar {
-                active: true
-            }
-            
+
             Component.onCompleted: {
                 Mycroft.MycroftController.sendText("shoppage main")
             }

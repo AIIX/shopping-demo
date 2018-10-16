@@ -5,7 +5,7 @@ import org.kde.kirigami 2.4 as Kirigami
 
 import Mycroft 1.0 as Mycroft
 
-Mycroft.DelegateBase {
+Mycroft.ScrollableDelegate {
     id: paymentDelegate
       property var userAddress
       backgroundImage: "https://source.unsplash.com/1920x1080/?+gradient"

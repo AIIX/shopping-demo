@@ -37,11 +37,11 @@ class ShoppingDemoSkill(MycroftSkill):
             # Register handlers for messagebus events
             self.add_event('aiix.shopping-demo.add_product', self.handle_add_product_intent)
             self.add_event('aiix.shopping-demo.remove_product', self.handle_remove_product_intent)
+            self.add_event('aiix.shopping-demo.view_cart', self.handle_viewcart_intent)
             self.add_event('aiix.shopping-demo.clear_cart', self.handle_clearcart_intent)
             self.add_event('aiix.shopping-demo.checkout', self.handle_checkout)
             self.add_event('aiix.shopping-demo.get_product_count', self.get_shop_cart_count)
             self.add_event('aiix.shopping-demo.process_payment', self.complete_payment)
-            self.add_event('aiix.shopping-demo.view_cart', self.handle.handle_viewcart_intent)
         
         except:
             pass

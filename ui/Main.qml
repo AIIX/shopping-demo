@@ -63,7 +63,7 @@ Mycroft.DelegateBase {
             }
     
         onClicked: {
-            Mycroft.MycroftController.sendText("view cart")
+            Mycroft.MycroftController.sendRequest("aiix.shopping-demo.view_cart", {});
             }
         }
     
@@ -223,7 +223,7 @@ Mycroft.DelegateBase {
             }
             
             Component.onCompleted: {
-                Mycroft.MycroftController.sendRequest("aiix.shopping-demo.view_cart", {});
+                Mycroft.MycroftController.sendText("shoppage main")
             }
         }
 }

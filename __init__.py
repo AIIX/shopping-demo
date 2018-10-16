@@ -6,7 +6,6 @@ import time
 import requests
 import base64
 import string
-import subprocess
 from adapt.intent import IntentBuilder
 from os.path import join, dirname
 from string import Template

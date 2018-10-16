@@ -6,6 +6,7 @@ import time
 import requests
 import base64
 import string
+import subprocess
 from adapt.intent import IntentBuilder
 from os.path import join, dirname
 from string import Template
@@ -23,6 +24,7 @@ productObject = {}
 productAddList = []
 priceOfItems = []
 shopPage = ""
+checkoutPrice = ""
 
 class ShoppingDemoSkill(MycroftSkill):
     def __init__(self):
@@ -40,7 +42,7 @@ class ShoppingDemoSkill(MycroftSkill):
             self.add_event('aiix.shopping-demo.checkout', self.handle_checkout)
             self.add_event('aiix.shopping-demo.get_product_count', self.get_shop_cart_count)
             self.add_event('aiix.shopping-demo.process_payment', self.complete_payment)
-            
+        
         except:
             pass
 
@@ -76,7 +78,7 @@ class ShoppingDemoSkill(MycroftSkill):
             productTitle = utterance.replace(" ", "").lower()
         except:
             productTitle = message.data["name"].replace("-", "").replace(" ", "").lower()
-        
+            
         global productAddList
         global shopPage
         shopPage = "main"
@@ -99,9 +101,11 @@ class ShoppingDemoSkill(MycroftSkill):
         """
         global productAddList
         global productObject
+        global checkoutPrice
         try:
             utterance = message.data.get('utterance').lower()
             utterance = utterance.replace(message.data.get('RemoveProductKeyword'), '')
+            self.getProductMatch(utterance);
             productTitle = utterance.replace(" ", "").lower()
         except:
             productId = message.data["id"]
@@ -114,6 +118,7 @@ class ShoppingDemoSkill(MycroftSkill):
         productObject['products'] = productAddList
         cartProductsBlob = productObject
         totalPrice = self.get_total()
+        checkoutPrice = totalPrice
         self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/cart", "dataCartBlob": cartProductsBlob, "totalPrice": totalPrice}))
     
     @intent_handler(IntentBuilder("Checkout").require("CheckoutKeyword").build())
@@ -131,9 +136,11 @@ class ShoppingDemoSkill(MycroftSkill):
         global productObject
         global productAddList
         global priceOfItems
+        global checkoutPrice
         productObject['products'] = productAddList
         cartProductsBlob = productObject
         totalPrice = self.get_total()
+        checkoutPrice = totalPrice
         self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/cart", "dataCartBlob": cartProductsBlob, "totalPrice": totalPrice}))
         
     @intent_handler(IntentBuilder("ClearCart").require("ClearCartKeyword").build())
@@ -194,10 +201,11 @@ class ShoppingDemoSkill(MycroftSkill):
         self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "itemCartCount": len(productAddList)}))
 
     def handle_checkout(self):
+        global checkoutPrice
         paymentProviderObject = {}
         paymentProviders = [{"providerName": "PayPal", "providerImage": "http://assets.stickpng.com/thumbs/580b57fcd9996e24bc43c530.png"}, {"providerName": "Visa", "providerImage": "https://seeklogo.net/wp-content/uploads/2016/11/visa-logo-preview-400x400.png"}, {"providerName": "Mastercard", "providerImage": "http://vectorlogofree.com/wp-content/uploads/2012/10/maestro-card-vector-logo-400x400.png"}]
         paymentProviderObject['providers'] = paymentProviders
-        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/checkout", "paymentCartBlob": paymentProviderObject}))
+        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/checkout", "paymentCartBlob": paymentProviderObject, 'totalPrice': checkoutPrice}))
 
     def complete_payment(self):
         self.handle_clearcart_intent("clear")

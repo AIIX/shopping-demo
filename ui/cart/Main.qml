@@ -2,6 +2,7 @@ import QtQuick.Layouts 1.4
 import QtQuick 2.4
 import QtQuick.Controls 2.2
 import org.kde.kirigami 2.4 as Kirigami
+import org.kde.plasma.core 2.1 as PlasmaCore
 
 import Mycroft 1.0 as Mycroft
 
@@ -89,6 +90,11 @@ Mycroft.DelegateBase {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.top: parent.top
+                    spacing: Kirigami.Units.largeSpacing
+                
+            RowLayout {
+                    id: delegateInnerItem
+                    Layout.preferredWidth: parent.implicitWidth / 0.75
                     spacing: Kirigami.Units.smallSpacing
             
                     Image {
@@ -110,40 +116,40 @@ Mycroft.DelegateBase {
                         text: modelData.name
                         wrapMode: Text.WordWrap
                     }
-                
-                    Kirigami.Separator {
-                        Layout.fillHeight: true
-                        color: Kirigami.Theme.linkColor
-                    }
-                
+                    
+                    Rectangle {
+                    id: priceBox
+                    Layout.preferredWidth: Kirigami.Units.gridUnit * 2.5
+                    Layout.preferredHeight: priceBox.width 
+                    color: Kirigami.Theme.linkColor
+                    
                     Label {
-                        Layout.fillWidth: true
+                        anchors.centerIn: parent
                         wrapMode: Text.WordWrap
                         elide: Text.ElideRight
-                        text: "£" + modelData.price
-                    }
-                    
-                    Kirigami.Separator {
-                        Layout.fillHeight: true
-                        color: Kirigami.Theme.linkColor
-                    }
-                    
-                    RoundButton {
-                        implicitWidth: Kirigami.Units.iconSizes.medium
-                        implicitHeight: Kirigami.Units.iconSizes.medium
-                        Image {
-                            source: "images/removeitem.svg"
-                            anchors.centerIn: parent
-                            width: Kirigami.Units.iconSizes.medium
-                            height: Kirigami.Units.iconSizes.medium
+                        text: "£" + modelData.price.toFixed(2);
+                        color: Kirigami.Theme.backgroundColor
                         }
-                        onClicked: {
-                            Mycroft.MycroftController.sendRequest("aiix.shopping-demo.remove_product", {"id": modelData.id});
-                        }
+                    }
+                }
+                
+                RoundButton {
+                    implicitWidth: Kirigami.Units.iconSizes.medium
+                    implicitHeight: Kirigami.Units.iconSizes.medium
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.medium
+                    Image {
+                        source: "images/removeitem.svg"
+                        anchors.centerIn: parent
+                        width: Kirigami.Units.iconSizes.medium
+                        height: Kirigami.Units.iconSizes.medium
+                    }
+                    onClicked: {
+                        Mycroft.MycroftController.sendRequest("aiix.shopping-demo.remove_product", {"id": modelData.id});
                     }
                 }
             }
         }
+    }
         
         Component.onCompleted: {
             Mycroft.MycroftController.sendText("shoppage cart")

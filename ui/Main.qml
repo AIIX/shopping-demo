@@ -11,7 +11,7 @@ Mycroft.DelegateBase {
       property var groceryModel: dataBlob.results
       property var itemCartCount
       backgroundImage: "https://source.unsplash.com/1920x1080/?+vegitables"
-      graceTime: 80000
+      graceTime: 240000
       
     controlBar: RowLayout {
         id: bottomButtonRow
@@ -127,9 +127,8 @@ Mycroft.DelegateBase {
             Image {
                 id: placeImage
                 source: modelData.image
-                Layout.fillWidth: true
-                Layout.preferredHeight: Kirigami.Units.gridUnit * 4
-                Layout.minimumHeight: Kirigami.Units.gridUnit * 4
+                Layout.fillHeight: true
+                Layout.preferredWidth: placeImage.implicitHeight + Kirigami.Units.gridUnit * 2
                 fillMode: Image.PreserveAspectFit
             }
             
@@ -219,8 +218,12 @@ Mycroft.DelegateBase {
                 }
             }
             
-                Component.onCompleted: {
-                    Mycroft.MycroftController.sendText("shoppage main")
-                }
+            ScrollBar.vertical: ScrollBar {
+                active: true
+            }
+            
+            Component.onCompleted: {
+                Mycroft.MycroftController.sendText("shoppage main")
+            }
         }
 }

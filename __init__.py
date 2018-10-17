@@ -212,7 +212,7 @@ class ShoppingDemoSkill(MycroftSkill):
     def complete_payment(self):
         self.handle_clearcart_intent("clear")
         addressObject = {"Street": "85  Crown Street", "City": "London", "Zip": "WC1V 6UG", "Phone": "070-08300467", "Fullname": "Jack N.Brandy"}
-        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/payment", "userAddress": addressObject}))
+        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/payment", "resetWorkflow": "true", "userAddress": addressObject}))
 
     def stop(self):
         """

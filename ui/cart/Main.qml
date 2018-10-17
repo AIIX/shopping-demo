@@ -16,19 +16,11 @@ Mycroft.ScrollableDelegate {
     graceTime: 80000
 
     controlBar: RowLayout {
-        id: bottomButtonRow
-
         anchors {
             left: parent.left
             right: parent.right
             bottom: parent.bottom
             margins: Kirigami.Units.largeSpacing
-        }
-
-        property var total: totalPrice
-
-        onTotalChanged: {
-            cartBtn.text = "Total: " + "£" + total + " " + "Checkout"
         }
 
         Button {
@@ -47,6 +39,8 @@ Mycroft.ScrollableDelegate {
             id: cartBtn
             Layout.preferredWidth: parent.width / 2
             Layout.fillHeight: true
+
+            text: "Total: " + "£" + totalPrice + " " + "Checkout"
 
             onClicked: {
                 Mycroft.MycroftController.sendRequest("aiix.shopping-demo.checkout", {});
@@ -67,7 +61,6 @@ Mycroft.ScrollableDelegate {
     }
 
     Kirigami.CardsListView {
-        id: aCard
         model: groceryCartModel
 
         bottomMargin: delegate.controlBarItem.height + Kirigami.Units.largeSpacing

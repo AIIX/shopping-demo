@@ -75,12 +75,13 @@ Mycroft.ScrollableDelegate {
     }
 
     Kirigami.CardsListView {
-        id: aCard
-
-        bottomMargin: delegate.controlBarItem.height + Kirigami.Units.largeSpacing
         model: groceryModel
 
+        bottomMargin: delegate.controlBarItem.height + Kirigami.Units.largeSpacing
+
         delegate: Kirigami.AbstractCard {
+            id: aCard
+
             Layout.fillWidth: true
             implicitHeight: delegateItem.implicitHeight + Kirigami.Units.largeSpacing * 3
             contentItem: Item {
@@ -101,7 +102,6 @@ Mycroft.ScrollableDelegate {
                     }
                     Kirigami.Separator {
                         Layout.fillWidth: true
-                        color: Kirigami.Theme.linkColor
                     }
                     RowLayout {
                         Layout.fillWidth: true
@@ -115,7 +115,6 @@ Mycroft.ScrollableDelegate {
                         }
                         Kirigami.Separator {
                             Layout.fillHeight: true
-                            color: Kirigami.Theme.linkColor
                         }
                         Kirigami.FormLayout {
                             id: form
@@ -129,10 +128,6 @@ Mycroft.ScrollableDelegate {
                                 elide: Text.ElideRight
                                 text: modelData.superDepartment
                             }
-                            Kirigami.Separator {
-                                Layout.fillWidth: true
-                                color: Kirigami.Theme.textColor
-                            }
                             Label {
                                 Kirigami.FormData.label: "Department:"
                                 Layout.fillWidth: true
@@ -140,10 +135,7 @@ Mycroft.ScrollableDelegate {
                                 elide: Text.ElideRight
                                 text: modelData.department
                             }
-                            Kirigami.Separator {
-                                Layout.fillWidth: true
-                                color: Kirigami.Theme.textColor
-                            }
+
                             Label {
                                 Kirigami.FormData.label: "Qty:"
                                 Layout.fillWidth: true
@@ -151,10 +143,7 @@ Mycroft.ScrollableDelegate {
                                 elide: Text.ElideRight
                                 text: modelData.ContentsQuantity + " " + modelData.ContentsMeasureType
                             }
-                            Kirigami.Separator {
-                                Layout.fillWidth: true
-                                color: Kirigami.Theme.textColor
-                            }
+
                             Label {
                                 Kirigami.FormData.label: "Price:"
                                 Layout.fillWidth: true
@@ -162,17 +151,9 @@ Mycroft.ScrollableDelegate {
                                 elide: Text.ElideRight
                                 text: "£" + modelData.price
                             }
-                            Kirigami.Separator {
-                                Layout.fillWidth: true
-                                color: Kirigami.Theme.textColor
-                            }
                         }
                     }
 
-                    Kirigami.Separator {
-                        Layout.fillWidth: true
-                        color: Kirigami.Theme.linkColor
-                    }
                     Button {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Kirigami.Units.gridUnit * 2

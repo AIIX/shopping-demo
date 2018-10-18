@@ -1,5 +1,25 @@
-import QtQuick.Layouts 1.4
+/*
+ *  Copyright 2018 by Aditya Mehra <aix.m@outlook.com>
+ *  Copyright 2018 Marco Martin <mart@kde.org>
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
 import QtQuick 2.4
+import QtQuick.Layouts 1.4
+import QtGraphicalEffects 1.0
 import QtQuick.Controls 2.2
 import org.kde.kirigami 2.4 as Kirigami
 
@@ -15,61 +35,72 @@ Mycroft.ScrollableDelegate {
     backgroundImage: "https://source.unsplash.com/1920x1080/?+vegitables"
     graceTime: 240000
 
-    controlBar: RowLayout {
+    controlBar: Control {
         anchors {
             left: parent.left
             right: parent.right
             bottom: parent.bottom
-            margins: Kirigami.Units.largeSpacing
         }
+        padding: Kirigami.Units.largeSpacing
 
-        Button {
-            id: backButton
-            Layout.preferredWidth: parent.width / 6
-            Layout.fillHeight: true
-            icon.name: "go-previous-symbolic"
-            onClicked: {
-                delegate.backRequested();
+        background: LinearGradient {
+            start: Qt.point(0, 0)
+            end: Qt.point(0, height)
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "transparent" }
+                GradientStop { position: 1.0; color: "black" }
             }
         }
 
-        Button {
-            id: cartBtn
-            Layout.preferredWidth: parent.width / 2
-            Layout.fillHeight: true
-            text: "View Cart"
-
-            //Badge
-            Rectangle {
-                color: Kirigami.Theme.linkColor
-                width: Kirigami.Units.gridUnit * 1.5
-                height: parent.height - (Kirigami.Units.largeSpacing + Kirigami.Units.smallSpacing)
-                anchors.right: parent.right
-                anchors.rightMargin: Kirigami.Units.largeSpacing
-                anchors.verticalCenter: parent.verticalCenter
-                radius: 5
-                Label {
-                    id: cartCountLabel
-                    anchors.centerIn: parent
-                    color: Kirigami.Theme.backgroundColor
-                    text: delegate.itemCartCount
+        contentItem: RowLayout {
+            Button {
+                id: backButton
+                Layout.preferredWidth: parent.width / 6
+                Layout.fillHeight: true
+                icon.name: "go-previous-symbolic"
+                onClicked: {
+                    delegate.backRequested();
                 }
             }
 
-            onClicked: {
-                Mycroft.MycroftController.sendRequest("aiix.shopping-demo.view_cart", {});
+            Button {
+                id: cartBtn
+                Layout.preferredWidth: parent.width / 2
+                Layout.fillHeight: true
+                text: "View Cart"
+
+                //Badge
+                Rectangle {
+                    color: Kirigami.Theme.linkColor
+                    width: Kirigami.Units.gridUnit * 1.5
+                    height: parent.height - (Kirigami.Units.largeSpacing + Kirigami.Units.smallSpacing)
+                    anchors.right: parent.right
+                    anchors.rightMargin: Kirigami.Units.largeSpacing
+                    anchors.verticalCenter: parent.verticalCenter
+                    radius: 5
+                    Label {
+                        id: cartCountLabel
+                        anchors.centerIn: parent
+                        color: Kirigami.Theme.backgroundColor
+                        text: delegate.itemCartCount
+                    }
+                }
+
+                onClicked: {
+                    Mycroft.MycroftController.sendRequest("aiix.shopping-demo.view_cart", {});
+                }
             }
-        }
 
-        Button {
-            id: cartclearBtn
-            Layout.preferredWidth: parent.width / 3.225
-            Layout.fillHeight: true
+            Button {
+                id: cartclearBtn
+                Layout.preferredWidth: parent.width / 3.225
+                Layout.fillHeight: true
 
-            text: "Clear Cart"
+                text: "Clear Cart"
 
-            onClicked: {
-                Mycroft.MycroftController.sendText("clear cart")
+                onClicked: {
+                    Mycroft.MycroftController.sendText("clear cart")
+                }
             }
         }
     }

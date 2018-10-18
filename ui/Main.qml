@@ -74,15 +74,18 @@ Mycroft.ScrollableDelegate {
         }
     }
 
-    Kirigami.CardsListView {
+    Kirigami.CardsGridView {
         model: groceryModel
 
         bottomMargin: delegate.controlBarItem.height + Kirigami.Units.largeSpacing
 
+        minimumColumnWidth: Kirigami.Units.gridUnit * 25
+        maximumColumnWidth: Kirigami.Units.gridUnit * 35
+        cellHeight: Kirigami.Units.gridUnit * 11
+
         delegate: Kirigami.AbstractCard {
             id: aCard
 
-            Layout.fillWidth: true
             implicitHeight: delegateItem.implicitHeight + Kirigami.Units.largeSpacing * 3
             contentItem: Item {
                 implicitWidth: parent.implicitWidth

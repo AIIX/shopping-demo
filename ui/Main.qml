@@ -112,7 +112,7 @@ Mycroft.ScrollableDelegate {
 
         minimumColumnWidth: Kirigami.Units.gridUnit * 25
         maximumColumnWidth: Kirigami.Units.gridUnit * 35
-        cellHeight: Kirigami.Units.gridUnit * 11
+        cellHeight: contentItem.children[0].implicitHeight + Kirigami.Units.gridUnit
 
         delegate: Kirigami.AbstractCard {
             id: aCard

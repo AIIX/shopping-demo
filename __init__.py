@@ -1,5 +1,5 @@
 """
-Shopping Demo Mycroft Skill.
+Shopping Demo Mycroft Skill
 """
 import random
 import time

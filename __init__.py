@@ -65,8 +65,14 @@ class ShoppingDemoSkill(MycroftSkill):
         result_search = response.json()
         global productBlob
         productBlob = result_search
-        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "dataBlob": productBlob['uk']['ghs']['products'], "itemCartCount": len(productAddList)}))
-        
+        global productObject
+        productObject['products'] = productAddList
+
+        if len(productAddList) > 0:
+            self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "secondaryTypes": ["shopping-demo/cart"], "dataBlob": productBlob['uk']['ghs']['products'], "itemCartCount": len(productAddList), "dataCartBlob": productObject}))
+        else:
+            self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "dataBlob": productBlob['uk']['ghs']['products'], "itemCartCount": len(productAddList), "dataCartBlob": productObject}))
+
     @intent_handler(IntentBuilder("AddProduct").require("AddProductKeyword").build())
     def handle_add_product_intent(self, message):
         """
@@ -94,8 +100,9 @@ class ShoppingDemoSkill(MycroftSkill):
                 productImage = x['image']
                 productId = self.gen_rand_id()
                 productAddList.append({"quantity": productQty, "price": productPrice, "name": productName, "image": productImage, "id": productId})
-                self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "itemCartCount": len(productAddList), "dataCartBlob": productObject, "totalPrice": self.get_total()}))
-        
+
+                self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "secondaryTypes": ["shopping-demo/cart"], "itemCartCount": len(productAddList), "dataCartBlob": productObject, "totalPrice": self.get_total()}))
+
     @intent_handler(IntentBuilder("RemoveProduct").require("RemoveProductKeyword").build())
     def handle_remove_product_intent(self, message):
         """
@@ -158,12 +165,9 @@ class ShoppingDemoSkill(MycroftSkill):
         productObject['products'] = productAddList
         cartProductsBlob = productObject
         totalPrice = self.get_total()
-        if shopPage == "cart":
-            self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/cart", "itemCartCount": len(productAddList), "dataCartBlob": cartProductsBlob, "totalPrice": totalPrice}))
-            priceOfItems.clear()
-        elif shopPage == "main":
-            self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "itemCartCount": len(productAddList), "dataCartBlob": cartProductsBlob, "totalPrice": totalPrice}))
-            priceOfItems.clear()
+        priceOfItems.clear()
+        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "resetWorkflowToStep": "1", "itemCartCount": len(productAddList), "dataCartBlob": cartProductsBlob, "totalPrice": totalPrice}))
+
                     
     @intent_handler(IntentBuilder("ShopDemoPage").require("ShopDemoKeyword").build())
     def handle_shop_demo_page_intent(self, message):
@@ -212,7 +216,7 @@ class ShoppingDemoSkill(MycroftSkill):
     def complete_payment(self):
         self.handle_clearcart_intent("clear")
         addressObject = {"Street": "85  Crown Street", "City": "London", "Zip": "WC1V 6UG", "Phone": "070-08300467", "Fullname": "Jack N.Brandy"}
-        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/payment", "resetWorkflow": "true", "userAddress": addressObject}))
+        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/payment", "resetWorkflowToStep": "-1", "userAddress": addressObject}))
 
     def stop(self):
         """

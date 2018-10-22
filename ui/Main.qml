@@ -67,6 +67,7 @@ Mycroft.ScrollableDelegate {
                 Layout.preferredWidth: parent.width / 2
                 Layout.fillHeight: true
                 text: "View Cart"
+                enabled: itemCartCount > 0
 
                 //Badge
                 Rectangle {

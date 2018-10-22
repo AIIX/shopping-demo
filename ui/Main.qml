@@ -29,10 +29,19 @@ Mycroft.ScrollableDelegate {
 
     property var dataBlob
     property var groceryModel: dataBlob.results
+    property var multiProdBlob
     property var itemCartCount
 
     backgroundImage: "https://source.unsplash.com/1920x1080/?+vegitables"
     graceTime: 240000
+
+    onMultiProdBlobChanged: {
+        if (multiProdBlob.results && multiProdBlob.results.length > 0) {
+            multiProductSheet.open();
+        } else {
+            multiProductSheet.close();
+        }
+    }
 
     controlBar: Control {
         anchors {
@@ -203,6 +212,42 @@ Mycroft.ScrollableDelegate {
 
         Component.onCompleted: {
             Mycroft.MycroftController.sendText("shoppage main")
+        }
+    }
+
+    Kirigami.OverlaySheet {
+        id: multiProductSheet
+
+        header: Kirigami.Heading {
+            text: "Select Product:"
+        }
+        ListView {
+            implicitWidth: Kirigami.Units.gridUnit * 25
+            model: multiProdBlob.results
+            delegate: Kirigami.AbstractListItem {
+                width: parent.width
+                onClicked: {
+                    Mycroft.MycroftController.sendRequest("aiix.shopping-demo.add_product", {"name": modelData.name});
+                    multiProductSheet.close();
+                }
+                RowLayout {
+                    Kirigami.Heading {
+                        text: modelData.rank
+                    }
+                    Image {
+                        source: modelData.image
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: placeImage.implicitHeight + Kirigami.Units.gridUnit * 2
+                        fillMode: Image.PreserveAspectFit
+                    }
+                    Kirigami.Heading {
+                        Layout.fillWidth: true
+                        text: modelData.name
+                        level: 3
+                        wrapMode: Text.WordWrap
+                    }
+                }
+            }
         }
     }
 }

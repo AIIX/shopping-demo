@@ -218,33 +218,40 @@ Mycroft.ScrollableDelegate {
     Kirigami.OverlaySheet {
         id: multiProductSheet
 
+        leftPadding: 0
+        rightPadding: 0
+
+        parent: delegate
         header: Kirigami.Heading {
             text: "Select Product:"
         }
-        ListView {
+        ColumnLayout {
             implicitWidth: Kirigami.Units.gridUnit * 25
-            model: multiProdBlob.results
-            delegate: Kirigami.AbstractListItem {
-                width: parent.width
-                onClicked: {
-                    Mycroft.MycroftController.sendRequest("aiix.shopping-demo.add_product", {"name": modelData.name});
-                    multiProductSheet.close();
-                }
-                RowLayout {
-                    Kirigami.Heading {
-                        text: modelData.rank
+            spacing: 0
+            Repeater {
+                model: multiProdBlob.results
+                delegate: Kirigami.AbstractListItem {
+                    width: parent.width
+                    onClicked: {
+                        Mycroft.MycroftController.sendRequest("aiix.shopping-demo.add_product", {"name": modelData.name});
+                        multiProductSheet.close();
                     }
-                    Image {
-                        source: modelData.image
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: placeImage.implicitHeight + Kirigami.Units.gridUnit * 2
-                        fillMode: Image.PreserveAspectFit
-                    }
-                    Kirigami.Heading {
-                        Layout.fillWidth: true
-                        text: modelData.name
-                        level: 3
-                        wrapMode: Text.WordWrap
+                    RowLayout {
+                        Kirigami.Heading {
+                            text: modelData.rank
+                        }
+                        Image {
+                            source: modelData.image
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: placeImage.implicitHeight + Kirigami.Units.gridUnit * 2
+                            fillMode: Image.PreserveAspectFit
+                        }
+                        Kirigami.Heading {
+                            Layout.fillWidth: true
+                            text: modelData.name
+                            level: 3
+                            wrapMode: Text.WordWrap
+                        }
                     }
                 }
             }

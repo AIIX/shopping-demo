@@ -14,6 +14,7 @@ from mycroft.skills.context import *
 from mycroft.util import read_stripped_lines
 from mycroft.util.log import getLogger
 from mycroft.messagebus.message import Message
+from word2number import w2n
 
 __author__ = 'aix'
 
@@ -22,6 +23,8 @@ productBlob = ""
 productObject = {}
 productAddList = []
 priceOfItems = []
+multiProductListAdd = {}
+multiProductListRemove = {}
 shopPage = ""
 checkoutPrice = ""
 
@@ -67,42 +70,59 @@ class ShoppingDemoSkill(MycroftSkill):
         productBlob = result_search
         global productObject
         productObject['products'] = productAddList
-
+        
         if len(productAddList) > 0:
             self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "secondaryTypes": ["shopping-demo/cart"], "dataBlob": productBlob['uk']['ghs']['products'], "itemCartCount": len(productAddList), "dataCartBlob": productObject}))
         else:
             self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "dataBlob": productBlob['uk']['ghs']['products'], "itemCartCount": len(productAddList), "dataCartBlob": productObject}))
-
+        
     @intent_handler(IntentBuilder("AddProduct").require("AddProductKeyword").build())
     def handle_add_product_intent(self, message):
         """
         Add Product
         """
-        try:
-            utterance = message.data.get('utterance').lower()
-            utterance = utterance.replace(message.data.get('AddProductKeyword'), '')
-            productTitle = utterance.replace(" ", "").lower()
-        except:
-            productTitle = message.data["name"].replace("-", "").replace(" ", "").lower()
-            
         global productAddList
         global shopPage
         global productObject
         shopPage = "main"
-        productObject['products'] = productAddList
+        try:
+            utterance = message.data.get('utterance').lower()
+            utterance = utterance.replace(message.data.get('AddProductKeyword'), '')
+            productRank = self.rank_product(utterance)
+            productObject['products'] = productAddList
+            if len(productRank) < 1: 
+                self.speak('Sorry no product found')
+            elif len(productRank) > 1:
+                self.speak('Found multiple items, please select an item number for the product you wish to add', expect_response=True)
+                self.handle_multiple_products_add(productRank)
+            else:
+                productTitle = productRank[0]['name'].replace("-", "").replace(" ", "").lower()
+                for x in productBlob['uk']['ghs']['products']['results']:
+                    mapProduct = x['name'].replace("-", "").replace(" ", "").lower()
+                    if mapProduct == productTitle:
+                        productQty = 1
+                        productPrice = x['price']
+                        productName = x['name']
+                        productImage = x['image']
+                        productId = self.gen_rand_id()
+                        productAddList.append({"quantity": productQty, "price": productPrice, "name": productName, "image": productImage, "id": productId})
+                        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "secondaryTypes": ["shopping-demo/cart"], "itemCartCount": len(productAddList), "dataCartBlob": productObject, "totalPrice": self.get_total()}))
+            
+        except:
+            productTitle = message.data["name"].replace("-", "").replace(" ", "").lower()
+            productObject['products'] = productAddList
+            
+            for x in productBlob['uk']['ghs']['products']['results']:
+                mapProduct = x['name'].replace("-", "").replace(" ", "").lower()
+                if mapProduct == productTitle:
+                    productQty = 1
+                    productPrice = x['price']
+                    productName = x['name']
+                    productImage = x['image']
+                    productId = self.gen_rand_id()
+                    productAddList.append({"quantity": productQty, "price": productPrice, "name": productName, "image": productImage, "id": productId})
+                    self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "secondaryTypes": ["shopping-demo/cart"], "itemCartCount": len(productAddList), "dataCartBlob": productObject, "totalPrice": self.get_total()}))
         
-        for x in productBlob['uk']['ghs']['products']['results']:
-            mapProduct = x['name'].replace("-", "").replace(" ", "").lower()
-            if mapProduct == productTitle:
-                productQty = 1
-                productPrice = x['price']
-                productName = x['name']
-                productImage = x['image']
-                productId = self.gen_rand_id()
-                productAddList.append({"quantity": productQty, "price": productPrice, "name": productName, "image": productImage, "id": productId})
-
-                self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "secondaryTypes": ["shopping-demo/cart"], "itemCartCount": len(productAddList), "dataCartBlob": productObject, "totalPrice": self.get_total()}))
-
     @intent_handler(IntentBuilder("RemoveProduct").require("RemoveProductKeyword").build())
     def handle_remove_product_intent(self, message):
         """
@@ -114,15 +134,25 @@ class ShoppingDemoSkill(MycroftSkill):
         try:
             utterance = message.data.get('utterance').lower()
             utterance = utterance.replace(message.data.get('RemoveProductKeyword'), '')
-            self.getProductMatch(utterance);
-            productTitle = utterance.replace(" ", "").lower()
+            productRemoveRank = self.rank_product_remove(utterance)
+            if len(productRemoveRank) < 1:
+                self.speak('Sorry no matching product found')
+            elif len(productRemoveRank) > 1:
+                self.speak('Found multiple items, please select an item number for the product you wish to remove', expect_response=True)
+                self.handle_multiple_products_remove(productRemoveRank)
+            else:
+                productId = productRemoveRank[0]['id']
+                for i, d in enumerate(productAddList):
+                    if d['id'] == productId:
+                        productAddList.pop(i)
+                        break
+
         except:
             productId = message.data["id"]
-        
-        for i, d in enumerate(productAddList):
-            if d['id'] == productId:
-                productAddList.pop(i)
-                break
+            for i, d in enumerate(productAddList):
+                if d['id'] == productId:
+                    productAddList.pop(i)
+                    break
         
         productObject['products'] = productAddList
         cartProductsBlob = productObject
@@ -167,7 +197,6 @@ class ShoppingDemoSkill(MycroftSkill):
         totalPrice = self.get_total()
         priceOfItems.clear()
         self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "resetWorkflowToStep": "1", "itemCartCount": len(productAddList), "dataCartBlob": cartProductsBlob, "totalPrice": totalPrice}))
-
                     
     @intent_handler(IntentBuilder("ShopDemoPage").require("ShopDemoKeyword").build())
     def handle_shop_demo_page_intent(self, message):
@@ -181,6 +210,38 @@ class ShoppingDemoSkill(MycroftSkill):
         shopPage = searchString
         print(shopPage)
         
+    @intent_handler(IntentBuilder("AddProductById").require("AddProductByIdKeyword").build())
+    def handle_add_product_by_id_intent(self, message):
+        """
+        Add Product By ID for VUI
+        """ 
+        global multiProductListAdd
+        utterance = message.data.get('utterance').lower()
+        utterance = utterance.replace(message.data.get('AddProductByIdKeyword'), '')
+        searchString = utterance.replace(" ", "").lower()
+        getNum = w2n.word_to_num(searchString)
+        getProdName = multiProductListAdd['results'][int(getNum)]['name']
+        formatMessage = "add product {0}".format(getProdName)
+        self.enclosure.bus.emit(Message("recognizer_loop:utterance", {"utterances": [formatMessage], "lang": "en-us"}));
+        multiProductListAdd['results'] = []
+        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "multipleProductsAddBlob": multiProductListAdd}))
+
+    @intent_handler(IntentBuilder("RemoveProductById").require("RemoveProductByIdKeyword").build())
+    def handle_remove_product_by_id_intent(self, message):
+        """
+        Remove Product By ID for VUI
+        """ 
+        global multiProductListRemove
+        utterance = message.data.get('utterance').lower()
+        utterance = utterance.replace(message.data.get('RemoveProductByIdKeyword'), '')
+        searchString = utterance.replace(" ", "").lower()
+        getNum = w2n.word_to_num(searchString)
+        getProdName = multiProductListRemove['results'][int(getNum)]['name']
+        formatMessage = "remove product {0}".format(getProdName)
+        self.enclosure.bus.emit(Message("recognizer_loop:utterance", {"utterances": [formatMessage], "lang": "en-us"}));
+        multiProductListRemove['results'] = []
+        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/cart", "multipleProductsRemoveBlob": multiProductListRemove}))
+
     def gen_rand_id(self):
         randomId = ''.join([random.choice(string.ascii_letters 
             + string.digits) for n in range(5)])
@@ -217,6 +278,79 @@ class ShoppingDemoSkill(MycroftSkill):
         self.handle_clearcart_intent("clear")
         addressObject = {"Street": "85  Crown Street", "City": "London", "Zip": "WC1V 6UG", "Phone": "070-08300467", "Fullname": "Jack N.Brandy"}
         self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/payment", "resetWorkflowToStep": "-1", "userAddress": addressObject}))
+        
+    def rank_product(self, utterance):
+        split_words = utterance.lower().split()
+        
+        global productBlob
+        search_result = productBlob['uk']['ghs']['products']['results']
+        found_products = []
+        for product in search_result:
+            rank = 0
+            split_title = product['name'].lower().split()
+            for words in split_words:
+                for title_words in split_title: 
+                    if words == title_words: 
+                        rank += 1
+                        break
+            product['rank'] = rank
+            if (rank > 1):
+                if len(found_products) > 0: 
+                    for p in found_products:
+                        if product['rank'] > p['rank']:
+                            if product not in found_products: 
+                                found_products = []
+                                found_products.append(product)
+                                break
+                        elif product['rank'] == p['rank']:
+                            if product not in found_products: 
+                                found_products.append(product)
+                else: 
+                    found_products.append(product)
+
+        return found_products  
+
+    def rank_product_remove(self, utterance):
+        split_words = utterance.lower().split()
+        
+        global productObject
+        search_result = productObject['products']
+        found_products = []
+        for product in search_result:
+            rank = 0
+            split_title = product['name'].lower().split()
+            for words in split_words:
+                for title_words in split_title: 
+                    if words == title_words: 
+                        rank += 1
+                        break
+            product['rank'] = rank
+            if (rank > 1):
+                if len(found_products) > 0: 
+                    for p in found_products:
+                        if product['rank'] > p['rank']:
+                            if product not in found_products: 
+                                found_products = []
+                                found_products.append(product)
+                                break
+                        elif product['rank'] == p['rank']:
+                            if product not in found_products: 
+                                found_products.append(product)
+                else: 
+                    found_products.append(product)
+
+        return found_products
+
+
+    def handle_multiple_products_add(self, prodlist):
+        global multiProductListAdd
+        multiProductListAdd['results'] = prodlist
+        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo", "multipleProductsAddBlob": multiProductListAdd}))
+
+    def handle_multiple_products_remove(self, prodlist):
+        global multiProductListRemove
+        multiProductListRemove['results'] = prodlist
+        self.enclosure.bus.emit(Message("metadata", {"type": "shopping-demo/cart", "multipleProductsRemoveBlob": multiProductListRemove}))
 
     def stop(self):
         """

@@ -30,9 +30,18 @@ Mycroft.ScrollableDelegate {
     property var dataCartBlob
     property var groceryCartModel: dataCartBlob.products
     property var totalPrice
+    property var multipleProductsRemoveBlob
 
     backgroundImage: "https://source.unsplash.com/1920x1080/?+vegitables"
     graceTime: 80000
+    
+    onMultipleProductsRemoveBlobChanged: {
+        if (multipleProductsRemoveBlob.results && multipleProductsRemoveBlob.results.length > 0) {
+            multipleProductsRemoveSheet.open();
+        } else {
+            multipleProductsRemoveSheet.close();
+        }
+    }
 
     controlBar: Control {
         anchors {
@@ -174,6 +183,49 @@ Mycroft.ScrollableDelegate {
 
         Component.onCompleted: {
             Mycroft.MycroftController.sendText("shoppage cart")
+        }
+    }
+    
+    Kirigami.OverlaySheet {
+        id: multipleProductsRemoveSheet
+
+        leftPadding: 0
+        rightPadding: 0
+
+        parent: delegate
+        header: Kirigami.Heading {
+            text: "Select Product:"
+        }
+        ColumnLayout {
+            implicitWidth: Kirigami.Units.gridUnit * 25
+            spacing: 0
+            Repeater {
+                model: multipleProductsRemoveBlob.results
+                delegate: Kirigami.AbstractListItem {
+                    width: parent.width
+                    onClicked: {
+                        Mycroft.MycroftController.sendRequest("aiix.shopping-demo.remove_product", {"id": modelData.id});
+                        multipleProductsRemoveSheet.close();
+                    }
+                    RowLayout {
+                        Kirigami.Heading {
+                            text: index
+                        }
+                        Image {
+                            source: modelData.image
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: placeImage.implicitHeight + Kirigami.Units.gridUnit * 2
+                            fillMode: Image.PreserveAspectFit
+                        }
+                        Kirigami.Heading {
+                            Layout.fillWidth: true
+                            text: modelData.name
+                            level: 3
+                            wrapMode: Text.WordWrap
+                        }
+                    }
+                }
+            }
         }
     }
 }

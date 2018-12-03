@@ -27,19 +27,18 @@ import Mycroft 1.0 as Mycroft
 Mycroft.ScrollableDelegate {
     id: delegate
 
-    property var dataCartBlob
-    property var groceryCartModel: dataCartBlob.products
-    property var totalPrice
-    property var multipleProductsRemoveBlob
+    property var groceryModel: sessionData.dataBlob.results
+    property var multipleProductsAddBlob: sessionData.multipleProductsAddBlob 
+    property var itemCartCount: sessionData.itemCartCount
 
-    backgroundImage: "https://source.unsplash.com/1920x1080/?+vegitables"
-    graceTime: 80000
-    
-    onMultipleProductsRemoveBlobChanged: {
-        if (multipleProductsRemoveBlob.results && multipleProductsRemoveBlob.results.length > 0) {
-            multipleProductsRemoveSheet.open();
+    skillBackgroundSource: "https://source.unsplash.com/1920x1080/?+vegitables"
+    //graceTime: 240000
+
+    onMultipleProductsAddBlobChanged: {
+        if (multipleProductsAddBlob.results && multipleProductsAddBlob.results.length > 0) {
+            multipleProductsAddSheet.open();
         } else {
-            multipleProductsRemoveSheet.close();
+            multipleProductsAddSheet.close();
         }
     }
 
@@ -66,10 +65,8 @@ Mycroft.ScrollableDelegate {
                 Layout.preferredWidth: parent.width / 6
                 Layout.fillHeight: true
                 icon.name: "go-previous-symbolic"
-
                 onClicked: {
                     delegate.backRequested();
-                    Mycroft.MycroftController.sendRequest("aiix.shopping-demo.get_product_count", {});
                 }
             }
 
@@ -77,11 +74,28 @@ Mycroft.ScrollableDelegate {
                 id: cartBtn
                 Layout.preferredWidth: parent.width / 2
                 Layout.fillHeight: true
+                text: "View Cart"
+                enabled: itemCartCount > 0
 
-                text: "Total: " + "£" + totalPrice + " " + "Checkout"
+                //Badge
+                Rectangle {
+                    color: Kirigami.Theme.linkColor
+                    width: Kirigami.Units.gridUnit * 1.5
+                    height: parent.height - (Kirigami.Units.largeSpacing + Kirigami.Units.smallSpacing)
+                    anchors.right: parent.right
+                    anchors.rightMargin: Kirigami.Units.largeSpacing
+                    anchors.verticalCenter: parent.verticalCenter
+                    radius: 5
+                    Label {
+                        id: cartCountLabel
+                        anchors.centerIn: parent
+                        color: Kirigami.Theme.backgroundColor
+                        text: delegate.itemCartCount
+                    }
+                }
 
                 onClicked: {
-                    Mycroft.MycroftController.sendRequest("aiix.shopping-demo.checkout", {});
+                    Mycroft.MycroftController.sendRequest("aiix.shopping-demo.view_cart", {});
                 }
             }
 
@@ -99,82 +113,97 @@ Mycroft.ScrollableDelegate {
         }
     }
 
-    Kirigami.CardsListView {
-        model: groceryCartModel
+    Kirigami.CardsGridView {
+        model: groceryModel
 
         bottomMargin: delegate.controlBarItem.height + Kirigami.Units.largeSpacing
 
+        minimumColumnWidth: Kirigami.Units.gridUnit * 25
+        maximumColumnWidth: Kirigami.Units.gridUnit * 35
+        cellHeight: contentItem.children[0].implicitHeight + Kirigami.Units.gridUnit
+
         delegate: Kirigami.AbstractCard {
+            id: aCard
 
-            Layout.fillWidth: true
             implicitHeight: delegateItem.implicitHeight + Kirigami.Units.largeSpacing * 3
-
             contentItem: Item {
                 implicitWidth: parent.implicitWidth
                 implicitHeight: parent.implicitHeight
-
-                RowLayout {
+                ColumnLayout {
                     id: delegateItem
-                    anchors {
-                        left: parent.left
-                        right: parent.right
-                        top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    spacing: Kirigami.Units.smallSpacing
+                    Kirigami.Heading {
+                        id: groceryNameLabel
+                        Layout.fillWidth: true
+                        text: modelData.name
+                        level: 3
+                        wrapMode: Text.WordWrap
                     }
-                    spacing: Kirigami.Units.largeSpacing
-
+                    Kirigami.Separator {
+                        Layout.fillWidth: true
+                    }
                     RowLayout {
-                        id: delegateInnerItem
-                        Layout.preferredWidth: parent.implicitWidth / 0.75
-                        spacing: Kirigami.Units.smallSpacing
-
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: form.implicitHeight
                         Image {
                             id: placeImage
                             source: modelData.image
-                            Layout.preferredHeight: Kirigami.Units.gridUnit * 4
-                            Layout.minimumHeight: Kirigami.Units.gridUnit * 4
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: placeImage.implicitHeight + Kirigami.Units.gridUnit * 2
                             fillMode: Image.PreserveAspectFit
                         }
-
                         Kirigami.Separator {
                             Layout.fillHeight: true
-                            color: Kirigami.Theme.linkColor
                         }
-
-                        Label {
-                            id: groceryNameLabel
+                        Kirigami.FormLayout {
+                            id: form
                             Layout.fillWidth: true
-                            text: modelData.name
-                            wrapMode: Text.WordWrap
-                        }
-
-                        Rectangle {
-                            id: priceBox
-                            Layout.preferredWidth: Kirigami.Units.gridUnit * 2.5
-                            Layout.preferredHeight: priceBox.width 
-                            color: Kirigami.Theme.linkColor
-
+                            Layout.minimumWidth: aCard.implicitWidth
+                            Layout.alignment: Qt.AlignLeft | Qt.AlignBottom
                             Label {
-                                anchors.centerIn: parent
+                                Kirigami.FormData.label: "Description:"
+                                Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
                                 elide: Text.ElideRight
-                                text: "£" + modelData.price.toFixed(2);
-                                color: Kirigami.Theme.backgroundColor
+                                text: modelData.superDepartment
+                            }
+                            Label {
+                                Kirigami.FormData.label: "Department:"
+                                Layout.fillWidth: true
+                                wrapMode: Text.WordWrap
+                                elide: Text.ElideRight
+                                text: modelData.department
+                            }
+
+                            Label {
+                                Kirigami.FormData.label: "Qty:"
+                                Layout.fillWidth: true
+                                wrapMode: Text.WordWrap
+                                elide: Text.ElideRight
+                                text: modelData.ContentsQuantity + " " + modelData.ContentsMeasureType
+                            }
+
+                            Label {
+                                Kirigami.FormData.label: "Price:"
+                                Layout.fillWidth: true
+                                wrapMode: Text.WordWrap
+                                elide: Text.ElideRight
+                                text: "£" + modelData.price
                             }
                         }
                     }
 
-                    RoundButton {
-                        implicitWidth: Kirigami.Units.iconSizes.medium
-                        implicitHeight: Kirigami.Units.iconSizes.medium
-                        Layout.preferredWidth: Kirigami.Units.iconSizes.medium
-                        Image {
-                            source: "images/removeitem.svg"
-                            anchors.centerIn: parent
-                            width: Kirigami.Units.iconSizes.medium
-                            height: Kirigami.Units.iconSizes.medium
-                        }
+                    Button {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: Kirigami.Units.gridUnit * 2
+                        text: "Add To Cart"
+
                         onClicked: {
-                            Mycroft.MycroftController.sendRequest("aiix.shopping-demo.remove_product", {"id": modelData.id});
+                            console.log(modelData.name);
+                            Mycroft.MycroftController.sendRequest("aiix.shopping-demo.add_product", {"name": modelData.name});
                         }
                     }
                 }
@@ -182,12 +211,12 @@ Mycroft.ScrollableDelegate {
         }
 
         Component.onCompleted: {
-            Mycroft.MycroftController.sendText("shoppage cart")
+            Mycroft.MycroftController.sendText("shoppage main")
         }
     }
-    
+
     Kirigami.OverlaySheet {
-        id: multipleProductsRemoveSheet
+        id: multipleProductsAddSheet
 
         leftPadding: 0
         rightPadding: 0
@@ -200,12 +229,12 @@ Mycroft.ScrollableDelegate {
             implicitWidth: Kirigami.Units.gridUnit * 25
             spacing: 0
             Repeater {
-                model: multipleProductsRemoveBlob.results
+                model: multipleProductsAddBlob.results
                 delegate: Kirigami.AbstractListItem {
                     width: parent.width
                     onClicked: {
-                        Mycroft.MycroftController.sendRequest("aiix.shopping-demo.remove_product", {"id": modelData.id});
-                        multipleProductsRemoveSheet.close();
+                        Mycroft.MycroftController.sendRequest("aiix.shopping-demo.add_product", {"name": modelData.name});
+                        multipleProductsAddSheet.close();
                     }
                     RowLayout {
                         Kirigami.Heading {
@@ -229,4 +258,3 @@ Mycroft.ScrollableDelegate {
         }
     }
 }
-

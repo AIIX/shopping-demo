@@ -26,12 +26,11 @@ import Mycroft 1.0 as Mycroft
 Mycroft.ScrollableDelegate {
     id: delegate
 
-    property var paymentCartBlob
-    property var paymentCartModel: paymentCartBlob.providers
-    property var totalPrice
+    property var paymentCartModel: sessionData.paymentCartBlob.providers
+    property var totalPrice: sessionData.totalPrice
 
-    backgroundImage: "https://source.unsplash.com/1920x1080/?+vegitables"
-    graceTime: 80000
+    skillBackgroundSource: "https://source.unsplash.com/1920x1080/?+vegitables"
+    //graceTime: 80000
 
     controlBar: RowLayout {
         anchors {

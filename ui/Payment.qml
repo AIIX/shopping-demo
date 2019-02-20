@@ -26,10 +26,9 @@ import Mycroft 1.0 as Mycroft
 Mycroft.ScrollableDelegate {
     id: paymentDelegate
 
-    property var userAddress
-
-    backgroundImage: "https://source.unsplash.com/1920x1080/?+gradient"
-    graceTime: 80000
+    property var userAddress: sessionData.userAddress
+    skillBackgroundSource: "https://source.unsplash.com/1920x1080/?+gradient"
+    //graceTime: 80000
 
     controlBar: RowLayout {
         anchors {

@@ -96,11 +96,10 @@ Mycroft.ScrollableDelegate {
                         width: Kirigami.Units.gridUnit * 4
                         fillMode: Image.PreserveAspectFit
                     }
-
                 }
             }
             onClicked: {
-                Mycroft.MycroftController.sendRequest("aiix.shopping-demo.process_payment", {"processor": modelData.providerName});
+                triggerGuiEvent("aiix.shopping-demo.process_payment", {"processor": modelData.providerName});
             }
         }
     }

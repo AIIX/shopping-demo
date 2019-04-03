@@ -68,7 +68,7 @@ Mycroft.ScrollableDelegate {
 
                 onClicked: {
                     delegate.backRequested();
-                    Mycroft.MycroftController.sendRequest("aiix.shopping-demo.get_product_count", {});
+                    triggerGuiEvent("aiix.shopping-demo.get_product_count", {});
                 }
             }
 
@@ -80,7 +80,7 @@ Mycroft.ScrollableDelegate {
                 text: "Total: " + "£" + totalPrice + " " + "Checkout"
 
                 onClicked: {
-                    Mycroft.MycroftController.sendRequest("aiix.shopping-demo.checkout", {});
+                    triggerGuiEvent("aiix.shopping-demo.checkout", {});
                 }
             }
 
@@ -92,7 +92,7 @@ Mycroft.ScrollableDelegate {
                 text: "Clear Cart"
 
                 onClicked: {
-                    Mycroft.MycroftController.sendText("clear cart")
+                    triggerGuiEvent("aiix.shopping-demo.clear_cart", {});
                 }
             }
         }
@@ -173,7 +173,7 @@ Mycroft.ScrollableDelegate {
                             height: Kirigami.Units.iconSizes.medium
                         }
                         onClicked: {
-                            Mycroft.MycroftController.sendRequest("aiix.shopping-demo.remove_product", {"id": modelData.id});
+                            triggerGuiEvent("aiix.shopping-demo.remove_product", {"id": modelData.id});
                         }
                     }
                 }
@@ -203,7 +203,7 @@ Mycroft.ScrollableDelegate {
                 delegate: Kirigami.AbstractListItem {
                     width: parent.width
                     onClicked: {
-                        Mycroft.MycroftController.sendRequest("aiix.shopping-demo.remove_product", {"id": modelData.id});
+                        triggerGuiEvent("aiix.shopping-demo.remove_product", {"id": modelData.id});
                         multipleProductsRemoveSheet.close();
                     }
                     RowLayout {

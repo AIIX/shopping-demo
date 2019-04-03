@@ -95,7 +95,7 @@ Mycroft.ScrollableDelegate {
                 }
 
                 onClicked: {
-                    Mycroft.MycroftController.sendRequest("aiix.shopping-demo.view_cart", {});
+                    triggerGuiEvent("aiix.shopping-demo.view_cart", {});
                 }
             }
 
@@ -107,7 +107,7 @@ Mycroft.ScrollableDelegate {
                 text: "Clear Cart"
 
                 onClicked: {
-                    Mycroft.MycroftController.sendText("clear cart")
+                    triggerGuiEvent("aiix.shopping-demo.clear_cart", {});
                 }
             }
         }
@@ -203,7 +203,7 @@ Mycroft.ScrollableDelegate {
 
                         onClicked: {
                             console.log(modelData.name);
-                            Mycroft.MycroftController.sendRequest("aiix.shopping-demo.add_product", {"name": modelData.name});
+                            triggerGuiEvent("aiix.shopping-demo.add_product", {"name": modelData.name});
                         }
                     }
                 }
@@ -233,7 +233,7 @@ Mycroft.ScrollableDelegate {
                 delegate: Kirigami.AbstractListItem {
                     width: parent.width
                     onClicked: {
-                        Mycroft.MycroftController.sendRequest("aiix.shopping-demo.add_product", {"name": modelData.name});
+                        triggerGuiEvent("aiix.shopping-demo.add_product", {"name": modelData.name});
                         multipleProductsAddSheet.close();
                     }
                     RowLayout {
